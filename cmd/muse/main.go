@@ -26,7 +26,8 @@ const help = `Muse — the model composes; the human executes.
 
 Usage: muse [options] [shell|composer|models|doctor|generate|integration bash|zsh]
 
-  muse                  Start your normal interactive shell in a PTY
+  muse                  Show the line to add to your shell startup file
+  muse shell            Start an optional nested PTY shell
   muse composer         Open AI composer; accept into integrated shell prompt
   muse models           Discover installed models
   muse doctor           Diagnose configuration, shell and Ollama
@@ -51,10 +52,11 @@ Composer: Enter generates; Ctrl+L models; Ctrl+T mode; Esc cancels;
 Ctrl+E editor; Ctrl+A accepts; Ctrl+R regenerates; Ctrl+D discards;
 PgUp/PgDn scroll; Ctrl+C returns to shell. Acceptance never executes.
 
-Optional integration (run yourself inside Bash/Zsh):
+Add the matching line to ~/.bashrc or ~/.zshrc to activate on shell startup:
   eval "$(muse integration bash)"   # or zsh
 Then Ctrl+X followed by g opens the composer at an EMPTY shell prompt.
 In Zsh, direct muse composer also stages into the next prompt.
+Open a new terminal after adding the line. Bare muse prints setup instructions.
 No dotfiles are modified. Without integration, use muse composer --manual.
 `
 
@@ -123,9 +125,17 @@ func run() error {
 	}
 	visited := map[string]bool{}
 	fs.Visit(func(f *flag.Flag) { visited[f.Name] = true })
-	command := "shell"
+	command := "setup"
 	if fs.NArg() > 0 {
 		command = fs.Arg(0)
+	}
+	if command == "setup" {
+		exe, e := os.Executable()
+		if e != nil {
+			return e
+		}
+		fmt.Print(shell.SetupInstructions(shellPath, exe))
+		return nil
 	}
 	if command == "integration" {
 		exe, e := os.Executable()

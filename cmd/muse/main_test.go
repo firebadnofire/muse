@@ -91,3 +91,34 @@ func TestGenerateComposeNeedsReviewOrPrint(t *testing.T) {
 		t.Fatal(e)
 	}
 }
+
+func TestBareMuseOnlyShowsSetup(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("HOME", dir)
+	t.Setenv("SHELL", "/bin/bash")
+	// Setup must work even when inference configuration is broken.
+	t.Setenv("MUSE_CONFIG", filepath.Join(dir, "invalid.toml"))
+	os.WriteFile(filepath.Join(dir, "invalid.toml"), []byte("invalid ["), 0600)
+	rc := filepath.Join(dir, ".bashrc")
+	os.WriteFile(rc, []byte("# preserve me\n"), 0600)
+	oldArgs, oldOut := os.Args, os.Stdout
+	defer func() { os.Args = oldArgs; os.Stdout = oldOut }()
+	out, e := os.CreateTemp(dir, "output")
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer out.Close()
+	os.Args = []string{"muse"}
+	os.Stdout = out
+	if e = run(); e != nil {
+		t.Fatal(e)
+	}
+	text, _ := os.ReadFile(out.Name())
+	if !strings.Contains(string(text), "Manually add this line to ~/.bashrc:") {
+		t.Fatal(string(text))
+	}
+	b, _ := os.ReadFile(rc)
+	if string(b) != "# preserve me\n" {
+		t.Fatal("modified startup file")
+	}
+}

@@ -8,6 +8,8 @@ import json
 import os
 from pathlib import Path
 import shutil
+import shlex
+import subprocess
 import sys
 import tempfile
 import threading
@@ -45,9 +47,14 @@ with tempfile.TemporaryDirectory(prefix='muse-e2e-') as tmp:
     env.update(TMPDIR=tmp, ZDOTDIR=tmp, HOME=tmp, XDG_CONFIG_HOME=str(root/'config'), XDG_DATA_HOME=str(root/'data'),
                TERM='xterm-256color', SHELL='/bin/'+test_shell, EDITOR='vi -u NONE -n',
                MUSE_ENDPOINT=f'http://127.0.0.1:{server.server_port}')
-    (root/('.bashrc' if test_shell=='bash' else '.zshrc')).write_text("PS1='MUSE_TEST> '\n")
+    (root/('.bashrc' if test_shell=='bash' else '.zshrc')).write_text("PS1='MUSE_TEST> '\neval \"$("+shlex.quote(binary)+" integration "+test_shell+")\"\n")
     if test_shell == 'zsh': (root/'.zshenv').write_text('unsetopt globalrcs\n')
-    child = pexpect.spawn(binary, ['--shell', '/bin/'+test_shell], env=env, encoding='utf-8', timeout=20, dimensions=(30, 100))
+    rc=root/('.bashrc' if test_shell=='bash' else '.zshrc')
+    before=rc.read_text()
+    setup=subprocess.run([binary],env=env,capture_output=True,text=True,timeout=5,check=True)
+    assert str(rc.name) in setup.stdout and 'Manually add' in setup.stdout
+    assert rc.read_text()==before, 'bare muse changed the startup file'
+    child = pexpect.spawn(binary, ['shell', '--shell', '/bin/'+test_shell], env=env, encoding='utf-8', timeout=20, dimensions=(30, 100))
     if os.getenv('MUSE_TEST_LOG'): child.logfile = sys.stdout
     try:
         child.expect('MUSE_TEST> ')
@@ -59,7 +66,6 @@ with tempfile.TemporaryDirectory(prefix='muse-e2e-') as tmp:
             child.sendline('vim -u NONE -n'); time.sleep(.5); child.send(':q!\r'); child.expect('MUSE_TEST> ')
         if shutil.which('htop'):
             child.sendline('htop'); time.sleep(.5); child.send('q'); child.expect('MUSE_TEST> ')
-        child.sendline('eval "$(muse integration '+test_shell+')"'); child.expect('MUSE_TEST> ')
         capture = root/'buffer'
         if test_shell == "bash":
             child.sendline("_capture() { printf %s \"$READLINE_LINE\" > '"+str(capture)+"'; }; bind -x '\"\\C-xv\":_capture'")
