@@ -15,6 +15,14 @@ normal terminal applications usable; see [architecture](docs/architecture.md).
 
 ## Build and install
 
+### Quick Start:
+
+```
+go install archuser.org/muse@latest
+```
+
+### Manual:
+
 Requirements: Linux, Go 1.26 or newer, a terminal such as Kitty, Bash or Zsh for
 optional native staging, Ollama for generation, and `vi` or another editor for
 Compose. Shell use does not require Ollama. No root privileges are required.
