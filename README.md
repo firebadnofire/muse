@@ -1,5 +1,7 @@
 # Muse
 
+[![CI](https://pubcode.archuser.org/firebadnofire/muse/badges/workflows/test.yml/badge.svg?branch=main)](https://pubcode.archuser.org/firebadnofire/muse/actions)
+
 Your shell. Your commands. A little inspiration.
 
 Muse is a Linux terminal companion written in Go. It runs your real shell in a
