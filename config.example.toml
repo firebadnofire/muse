@@ -1,0 +1,8 @@
+# Copy to ~/.config/muse/config.toml (or $XDG_CONFIG_HOME/muse/config.toml).
+endpoint = "http://localhost:11434"
+model = "qwen2.5-coder:7b"
+mode = "shotgun" # or compose
+editor = "" # empty uses $EDITOR, then vi; e.g. "vim -u NONE"
+timeout = "2m"
+temperature = 0.1
+max_tokens = 4096
