@@ -1,4 +1,4 @@
-module archuser.org/muse@latest
+module archuser.org/muse
 
 go 1.26.0
 
