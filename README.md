@@ -18,7 +18,7 @@ normal terminal applications usable; see [architecture](docs/architecture.md).
 ### Quick Start:
 
 ```
-go install archuser.org/muse@latest
+go install archuser.org/muse/cmd/muse@latest
 ```
 
 ### Manual:
