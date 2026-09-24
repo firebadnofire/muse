@@ -14,6 +14,7 @@ import (
 	"archuser.org/muse/internal/composer"
 	"archuser.org/muse/internal/config"
 	"archuser.org/muse/internal/inference"
+	"archuser.org/muse/internal/tuiconfig"
 	"charm.land/bubbles/v2/textinput"
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
@@ -308,6 +309,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					if e := config.SaveModel(m.configPath, m.cfg.Model); e != nil {
 						m.status += " (could not persist: " + e.Error() + ")"
 					}
+					// Update TUI config file with new model
+					tuiConfigPath := tuiconfig.Path()
+					if e := tuiconfig.SetModel(tuiConfigPath, m.cfg.Model); e != nil {
+						// Log error but don't fail the operation
+						fmt.Fprintf(os.Stderr, "Failed to save TUI model config: %v\n", e)
+					}
 				}
 			}
 			return m, nil
@@ -328,6 +335,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cfg.Mode = "shotgun"
 			}
 			m.status = "Mode: " + m.cfg.Mode
+			// Update TUI config file with new mode
+			tuiConfigPath := tuiconfig.Path()
+			if e := tuiconfig.SetMode(tuiConfigPath, m.cfg.Mode); e != nil {
+				// Log error but don't fail the operation
+				fmt.Fprintf(os.Stderr, "Failed to save TUI mode config: %v\n", e)
+			}
 			return m, nil
 		}
 		if key == "pgup" || key == "pgdown" || key == "ctrl+up" || key == "ctrl+down" {

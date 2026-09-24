@@ -4,6 +4,7 @@ import (
 	"archuser.org/muse/internal/app"
 	"archuser.org/muse/internal/composer"
 	"archuser.org/muse/internal/config"
+	"archuser.org/muse/internal/tuiconfig"
 	"archuser.org/muse/internal/inference"
 	"archuser.org/muse/internal/inference/ollama"
 	"archuser.org/muse/internal/shell"
@@ -157,6 +158,23 @@ func run() error {
 		fmt.Fprintln(os.Stderr, "Muse: configuration error; shell remains available:", composer.Display(e.Error()))
 		c = config.Default()
 	}
+	
+	// Load TUI default configuration
+	tuiConfigPath := tuiconfig.Path()
+	tuiConfig, e := tuiconfig.Load(tuiConfigPath)
+	if e != nil {
+		// If it doesn't exist yet, create with defaults
+		tuiConfig = tuiconfig.Default()
+	}
+	
+	// Apply TUI defaults for model and mode if not specified by flags or environment
+	if !visited["model"] && tuiConfig.Model != "" {
+		c.Model = tuiConfig.Model
+	}
+	if !visited["mode"] && tuiConfig.Mode != "" {
+		c.Mode = tuiConfig.Mode
+	}
+
 	for k, p := range map[string]*string{"model": &c.Model, "endpoint": &c.Endpoint, "mode": &c.Mode, "editor": &c.Editor, "timeout": &c.Timeout} {
 		if visited[k] {
 			switch k {
@@ -314,6 +332,15 @@ func run() error {
 	default:
 		return fmt.Errorf("unknown command %q; use muse --help", command)
 	}
+}
+
+// SaveTUIConfig saves the TUI config when model or mode is changed in the app
+func SaveTUIConfig(path, model, mode string) error {
+	tuiConfig := tuiconfig.Config{
+		Model: model,
+		Mode:  mode,
+	}
+	return tuiconfig.Save(path, tuiConfig)
 }
 func main() {
 	if e := run(); e != nil {
