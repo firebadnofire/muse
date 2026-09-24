@@ -11,14 +11,14 @@ import (
 	"strings"
 	"time"
 
+	"archuser.org/muse/internal/composer"
+	"archuser.org/muse/internal/config"
+	"archuser.org/muse/internal/inference"
 	"charm.land/bubbles/v2/textinput"
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/mattn/go-shellwords"
-	"muse/internal/composer"
-	"muse/internal/config"
-	"muse/internal/inference"
 )
 
 type modelsMsg struct {

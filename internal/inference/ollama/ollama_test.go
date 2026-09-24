@@ -1,11 +1,11 @@
 package ollama
 
 import (
+	"archuser.org/muse/internal/inference"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"muse/internal/inference"
 	"net/http"
 	"net/http/httptest"
 	"testing"

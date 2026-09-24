@@ -8,8 +8,8 @@ import (
 	"strings"
 	"syscall"
 
+	"archuser.org/muse/internal/composer"
 	"golang.org/x/sys/unix"
-	"muse/internal/composer"
 )
 
 // StageDirectory identifies an explicitly enabled integration in the immediate

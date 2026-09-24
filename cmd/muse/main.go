@@ -1,16 +1,16 @@
 package main
 
 import (
+	"archuser.org/muse/internal/app"
+	"archuser.org/muse/internal/composer"
+	"archuser.org/muse/internal/config"
+	"archuser.org/muse/internal/inference"
+	"archuser.org/muse/internal/inference/ollama"
+	"archuser.org/muse/internal/shell"
 	"context"
 	"errors"
 	"flag"
 	"fmt"
-	"muse/internal/app"
-	"muse/internal/composer"
-	"muse/internal/config"
-	"muse/internal/inference"
-	"muse/internal/inference/ollama"
-	"muse/internal/shell"
 	"os"
 	"os/exec"
 	"os/signal"

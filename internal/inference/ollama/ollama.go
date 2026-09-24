@@ -1,13 +1,13 @@
 package ollama
 
 import (
+	"archuser.org/muse/internal/inference"
 	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
-	"muse/internal/inference"
 	"net/http"
 	"strings"
 )

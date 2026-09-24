@@ -10,10 +10,10 @@ import (
 	"syscall"
 	"time"
 
+	"archuser.org/muse/internal/composer"
 	"github.com/creack/pty"
 	"github.com/muesli/cancelreader"
 	"golang.org/x/term"
-	"muse/internal/composer"
 )
 
 func Detect() string {

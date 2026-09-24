@@ -1,9 +1,9 @@
 package shell
 
 import (
+	"archuser.org/muse/internal/composer"
 	"github.com/creack/pty"
 	"io"
-	"muse/internal/composer"
 	"os"
 	"os/exec"
 	"path/filepath"

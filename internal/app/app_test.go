@@ -1,11 +1,11 @@
 package app
 
 import (
+	"archuser.org/muse/internal/config"
+	"archuser.org/muse/internal/inference"
 	tea "charm.land/bubbletea/v2"
 	"context"
 	"errors"
-	"muse/internal/config"
-	"muse/internal/inference"
 	"os"
 	"path/filepath"
 	"strings"
