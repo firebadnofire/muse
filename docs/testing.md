@@ -101,5 +101,19 @@ The Go format/vet/test/build checks and race tests passed on this Linux machine
 with Go 1.27.1. Both Bash and Zsh PTY smokes passed, including real Vim editing, htop,
 offline-server recovery, and terminal echo/canonical mode restoration. Native
 Bash and Zsh staging tests passed, including multiline fixture assignments. The live Ollama procedure above passed.
-CI configuration was added but has not been run on a hosted CI runner here.
+The workflow lives in `.forgejo/workflows/test.yml` and targets Pubcode's
+`ubuntu-22.04` label on the Linux runner shown in the runner configuration.
+Its action references are explicitly
+`https://pubcode.archuser.org/actions/checkout@v4` and
+`https://pubcode.archuser.org/actions/setup-go@v5`; both manifests were verified
+on Pubcode. The job uses `node:20-bookworm` so Node 20 and Debian package
+installation do not depend on the openSUSE runner host's installed tools. The
+runner must support job containers and have registry/package/toolchain network
+access. Go setup may download Go from upstream; mirrored actions do not imply
+an offline build. Go caching is disabled so no cache service is required.
+
+Pushes, pull requests, and manual dispatch trigger the workflow. Only Linux runs
+are defined because Muse currently targets Linux; the macOS, FreeBSD, and Windows
+runners are not used. YAML and shell syntax were checked locally, but this
+workflow has not yet been executed on Pubcode's runner.
 No human visual Kitty/Hyprland test or live remote SSH session was performed.

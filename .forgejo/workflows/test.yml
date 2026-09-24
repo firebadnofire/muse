@@ -1,0 +1,39 @@
+name: test
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  linux:
+    # Pubcode's opensuse-server runner advertises this Linux label.
+    runs-on: ubuntu-22.04
+    # Supply Node 20 for the mirrored actions and isolate package installation
+    # from the runner host. Do not assume GitHub's preinstalled runner tools.
+    container:
+      image: node:20-bookworm
+    steps:
+      - name: Check out Muse from Pubcode
+        uses: https://pubcode.archuser.org/actions/checkout@v4
+        with:
+          github-server-url: https://pubcode.archuser.org
+          persist-credentials: false
+      - name: Install test dependencies in the job container
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            build-essential ca-certificates git zsh vim htop python3 python3-pexpect
+      - name: Set up Go
+        uses: https://pubcode.archuser.org/actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          # Do not require a separately configured runner cache service.
+          cache: false
+      - name: Check formatting
+        run: test -z "$(gofmt -l cmd internal)"
+      - name: Vet
+        run: go vet ./...
+      - name: Test with race detector
+        run: go test -race ./...
+      - name: Build
+        run: go build ./...
+      - name: Bash PTY smoke
+        run: make smoke
+      - name: Zsh PTY smoke
+        run: MUSE_TEST_SHELL=zsh python3 scripts/pty-smoke.py ./bin/muse

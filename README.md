@@ -271,4 +271,7 @@ make smoke                   # optional: Python 3 + pexpect; real PTYs, fake HTT
 
 Unit tests use an HTTP test server and fake inference backend; Ollama is not
 required. Native staging tests exercise actual Bash/Zsh PTYs and skip a shell
-only when it is not installed. CI installs both and runs checks and the PTY smoke.
+only when it is not installed. [Forgejo CI](.forgejo/workflows/test.yml) uses
+Pubcode's mirrored checkout/setup-go actions and the `ubuntu-22.04` Linux runner
+label. It installs both shells and runs checks and PTY smokes in an explicit
+Node 20/Debian job container. No GitHub-hosted runner is required.
