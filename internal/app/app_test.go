@@ -97,3 +97,35 @@ func TestEditorFailureAndSmallWindow(t *testing.T) {
 		t.Fatal("hidden acceptance")
 	}
 }
+
+func TestPrefixSearchLoadsHistoryBesideConfig(t *testing.T) {
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, ".config", "muse", "config.toml")
+	historyPath := queryHistoryPath(configPath)
+	if _, e := saveQueryHistory(historyPath, "generate loop for installing x.deb"); e != nil {
+		t.Fatal(e)
+	}
+	m := New(context.Background(), config.Default(), configPath, "bash", fake{}, nil)
+	m.input.SetValue("gene")
+	m.searchHistory(-1)
+	if got := m.input.Value(); got != "generate loop for installing x.deb" {
+		t.Fatalf("history search returned %q", got)
+	}
+}
+
+func TestHistorySaveFailureDoesNotBlockGeneration(t *testing.T) {
+	dir := t.TempDir()
+	parentFile := filepath.Join(dir, "not-a-directory")
+	if e := os.WriteFile(parentFile, []byte("x"), 0600); e != nil {
+		t.Fatal(e)
+	}
+	m := New(context.Background(), config.Default(), filepath.Join(parentFile, "config.toml"), "bash", fake{}, nil)
+	m.models = []string{m.cfg.Model}
+	m.input.SetValue("generate something")
+	if m.start() == nil {
+		t.Fatal("generation should proceed despite history failure")
+	}
+	if m.historyWarning == "" {
+		t.Fatal("history failure was not surfaced")
+	}
+}

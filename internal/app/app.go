@@ -53,6 +53,11 @@ type Model struct {
 	events                              chan streamMsg
 	generation                          int
 	width, height                       int
+	queryHistory                        []string
+	historyCursor                       int
+	historyPrefix, historyDraft         string
+	historySearching                    bool
+	historyWarning                      string
 	draft                               *composer.Draft
 	result                              Result
 }
@@ -63,7 +68,13 @@ func New(ctx context.Context, c config.Config, path, shell string, b inference.B
 	in.CharLimit = 8192
 	in.SetVirtualCursor(true)
 	in.Focus()
-	return &Model{cfg: c, configPath: path, shell: shell, backend: b, ctx: ctx, tty: tty, input: in, preview: viewport.New(viewport.WithWidth(76), viewport.WithHeight(12)), status: "Enter a request", connection: "checking server", width: 80, height: 24}
+	m := &Model{cfg: c, configPath: path, shell: shell, backend: b, ctx: ctx, tty: tty, input: in, preview: viewport.New(viewport.WithWidth(76), viewport.WithHeight(12)), status: "Enter a request", connection: "checking server", width: 80, height: 24}
+	var historyErr error
+	m.queryHistory, historyErr = loadQueryHistory(queryHistoryPath(path))
+	if historyErr != nil {
+		m.historyWarning = "Query history could not be loaded: " + formatHistoryError(historyErr)
+	}
+	return m
 }
 func (m *Model) discover() tea.Cmd {
 	return func() tea.Msg {
@@ -84,6 +95,20 @@ func (m *Model) start() tea.Cmd {
 		m.status = "Model unavailable; Ctrl+L to discover/select an installed model"
 		return nil
 	}
+	// Save locally next to the active config file. A failed history write does
+	// not prevent the user from generating a suggestion.
+	history, err := saveQueryHistory(queryHistoryPath(m.configPath), m.input.Value())
+	if err != nil {
+		m.queryHistory = append(m.queryHistory, m.input.Value())
+		if len(m.queryHistory) > queryHistoryLimit {
+			m.queryHistory = m.queryHistory[len(m.queryHistory)-queryHistoryLimit:]
+		}
+		m.historyWarning = "Query history could not be saved: " + formatHistoryError(err)
+	} else {
+		m.queryHistory = history
+		m.historyWarning = ""
+	}
+	m.historySearching = false
 	m.clearDraft()
 	m.raw = ""
 	m.suggestion = ""
@@ -130,6 +155,34 @@ func (m *Model) start() tea.Cmd {
 		}()
 		return <-ch
 	}
+}
+
+func (m *Model) searchHistory(direction int) {
+	if !m.historySearching {
+		m.historyDraft = m.input.Value()
+		m.historyPrefix = m.historyDraft
+		m.historyCursor = len(m.queryHistory)
+		m.historySearching = true
+	}
+	if direction < 0 {
+		for i := m.historyCursor - 1; i >= 0; i-- {
+			if strings.HasPrefix(m.queryHistory[i], m.historyPrefix) {
+				m.historyCursor = i
+				m.input.SetValue(m.queryHistory[i])
+				return
+			}
+		}
+		return
+	}
+	for i := m.historyCursor + 1; i < len(m.queryHistory); i++ {
+		if strings.HasPrefix(m.queryHistory[i], m.historyPrefix) {
+			m.historyCursor = i
+			m.input.SetValue(m.queryHistory[i])
+			return
+		}
+	}
+	m.historySearching = false
+	m.input.SetValue(m.historyDraft)
 }
 func (m *Model) clearDraft() {
 	if m.draft != nil {
@@ -351,6 +404,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.busy {
 			return m, nil
 		}
+		if key == "up" {
+			m.searchHistory(-1)
+			return m, nil
+		}
+		if key == "down" && m.historySearching {
+			m.searchHistory(1)
+			return m, nil
+		}
 		switch key {
 		case "enter", "ctrl+r":
 			return m, m.start()
@@ -367,6 +428,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.status = "Discarded"
 			return m, nil
 		}
+		// Any ordinary editing action starts a fresh prefix search next time.
+		m.historySearching = false
 	}
 	var cmd tea.Cmd
 	m.input, cmd = m.input.Update(msg)
@@ -397,8 +460,12 @@ func (m *Model) View() tea.View {
 		}
 		body = b.String()
 	}
-	s := lipgloss.NewStyle().Bold(true).Render(title) + "\n" + m.input.View() + "\n" + composer.Display(m.status) + "\n\n" + body + "\n" +
-		"Enter generate | Ctrl+L models | Ctrl+T mode | Esc cancel/back\nCtrl+A accept | Ctrl+E editor | Ctrl+R retry | Ctrl+D discard\nPgUp/PgDn review | Ctrl+C close | Acceptance NEVER executes"
+	status := composer.Display(m.status)
+	if m.historyWarning != "" {
+		status += "\n" + composer.Display(m.historyWarning)
+	}
+	s := lipgloss.NewStyle().Bold(true).Render(title) + "\n" + m.input.View() + "\n" + status + "\n\n" + body + "\n" +
+		"Enter generate | ↑ prefix history | Ctrl+L models | Ctrl+T mode | Esc cancel/back\nCtrl+A accept | Ctrl+E editor | Ctrl+R retry | Ctrl+D discard\nPgUp/PgDn review | Ctrl+C close | Acceptance NEVER executes"
 	// Clip the final view to the physical terminal; long errors cannot displace controls.
 	v := tea.NewView(lipgloss.NewStyle().MaxWidth(m.width).MaxHeight(m.height).Render(s))
 	v.AltScreen = true

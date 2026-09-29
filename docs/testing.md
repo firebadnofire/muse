@@ -19,6 +19,8 @@ completion, model errors, cancellation, token truncation, and offline servers.
 Composer tests cover normalization, metacharacters, whitespace, control/bidi
 sanitization, private-file permissions/cleanup, editor failure, small windows,
 explicit acceptance, stale canceled events, and Compose file transfer. Native
+query history tests cover persistence beside the config, prefix search after
+relaunch, retention, private permissions, malformed data, and concurrent writes.
 Bash/Zsh PTY tests assert that command substitutions and semicolons stay literal
 in editable buffers, create no execution marker, and preserve existing input.
 Unsupported-shell behavior has a deterministic test.

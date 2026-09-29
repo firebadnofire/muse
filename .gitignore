@@ -27,3 +27,5 @@ go.work.sum
 
 /bin/
 __pycache__/
+.config/muse/query-history.jsonl*
+.config/muse/.query-history-*

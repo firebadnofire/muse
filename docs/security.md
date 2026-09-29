@@ -55,7 +55,10 @@ as the same user, validate command safety, or stop users explicitly executing
 text (including piping `muse generate --print` into a shell).
 
 Only a user-entered request, target shell name, mode instructions, and generation
-settings reach the configured endpoint. No history/files/secrets/terminal output
-are collected. No telemetry or application prompt logging is implemented.
-Ollama or a remote endpoint may maintain its own logs. Remote HTTP is unencrypted;
-choose an appropriate trusted HTTPS endpoint when leaving the local machine.
+settings reach the configured endpoint. Muse stores the most recent 500 submitted
+queries in `query-history.jsonl` beside the active config file, with file mode
+0600, for prefix search across composer launches. Delete that file to clear query
+history. Shell history, files, secrets, and terminal output are not collected.
+No telemetry is implemented. Ollama or a remote endpoint may maintain its own
+logs. Remote HTTP is unencrypted; choose an appropriate trusted HTTPS endpoint
+when leaving the local machine.

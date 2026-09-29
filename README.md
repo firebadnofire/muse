@@ -77,6 +77,9 @@ configuration; other file settings are preserved (TOML comments are not).
 No configuration file is required. See [config.example.toml](config.example.toml).
 Default path: `$XDG_CONFIG_HOME/muse/config.toml`, falling back to
 `~/.config/muse/config.toml`.
+Submitted query history for Up/Down prefix search is stored beside the active
+config as `query-history.jsonl` (0600), with the most recent 500 queries kept.
+Delete that file to clear query history.
 
 Precedence, lowest to highest: defaults → TOML file → environment → CLI flags.
 An interactive model selection overrides the active model for that composer and
@@ -264,9 +267,10 @@ command substitution to execute it.** The interactive composer streams previews;
   Kitty/Hyprland visual behavior and an actual remote SSH session still need
   human verification. Ctrl+Z suspending the composer is not a supported workflow;
   close it to return to the shell.
-- **History:** the nested shell owns history. Concurrent shell history merging
-  follows your shell configuration. Accepted text enters history only if you
-  later submit it.
+- **Shell history:** the nested shell owns command history. Concurrent shell
+  history merging follows your shell configuration. Accepted text enters shell
+  history only if you later submit it. Composer query history is stored beside
+  the config file for prefix search; see [security model](docs/security.md).
 
 See [security model](docs/security.md), [architecture](docs/architecture.md), and
 [verification procedures and results](docs/testing.md).
