@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 // Package app owns only the composer. The user's terminal emulator owns shell rendering.
 package app
 

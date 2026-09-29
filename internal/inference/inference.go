@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MPL-2.0
+
 // Package inference contains no shell or process execution capabilities.
 package inference
 

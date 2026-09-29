@@ -8,6 +8,13 @@ Muse is a Linux terminal companion written in Go. It runs your real shell in a
 PTY and offers an on-demand AI command composer backed by Ollama. **The model
 composes; the human executes.** Accepting a suggestion never runs it.
 
+## License
+
+Muse is licensed under the Mozilla Public License 2.0 (MPL-2.0). See
+[LICENSE](LICENSE) for the complete license text.
+
+Copyright (c) 2026 firebadnofire.
+
 This first release uses a full-size shell and a separate, temporary composer
 screen. Your terminal emulator renders the shell directly. There is no embedded
 terminal emulator or persistent 20/80 split pane. This deliberate reduction keeps

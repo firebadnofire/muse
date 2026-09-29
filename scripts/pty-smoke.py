@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MPL-2.0
+
 """Optional Linux PTY E2E check. Requires pexpect; uses a local fake HTTP backend.
 Does not execute generated source. Runs ordinary test commands and Vim/htop.
 Run after building: python3 scripts/pty-smoke.py ./bin/muse
